@@ -3,22 +3,28 @@ import 'dart:io';
 import 'package:build_test/build_test.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:ejson_generator/ejson_generator.dart';
+import 'package:pub_semver/pub_semver.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
 import 'package:meta/meta.dart';
 
-final _formatter = DartFormatter(lineEnding: '\n');
+final _formatter = DartFormatter(
+  lineEnding: '\n',
+  languageVersion: Version.parse("3.7.0"),
+);
 final _tag = RegExp(r'// \*.*\n// EJsonGenerator\n// \*.*');
 
 @isTest
-void testCompile(String description, dynamic source, dynamic matcher, {dynamic skip}) {
+void testCompile(String description, dynamic source, dynamic matcher,
+    {dynamic skip}) {
   source = source is File ? source.readAsStringSync() : source;
   if (source is! String) throw ArgumentError.value(source, 'source');
 
   matcher = matcher is File ? matcher.readAsStringSync() : matcher;
   if (matcher is String) {
     final source = _formatter.format(matcher);
-    matcher = completion(equals(source.substring(_tag.firstMatch(source)?.start ?? 0)));
+    matcher = completion(
+        equals(source.substring(_tag.firstMatch(source)?.start ?? 0)));
   }
   matcher ??= completes; // fallback
 
@@ -33,7 +39,8 @@ void testCompile(String description, dynamic source, dynamic matcher, {dynamic s
         writer: writer,
         reader: await PackageAssetReader.currentIsolate(),
       );
-      return _formatter.format(String.fromCharCodes(writer.assets.entries.single.value));
+      return _formatter
+          .format(String.fromCharCodes(writer.assets.entries.single.value));
     }
 
     expect(generate(), matcher);
@@ -166,8 +173,11 @@ void registerEmpty() => register(_encodeEmpty, _decodeEmpty);
     );
   });
 
-  await for (final generatedFile in Directory.current.list(recursive: true).where((f) => f is File && f.path.endsWith('.g.dart'))) {
-    final sourceFile = File(generatedFile.path.replaceFirst('.g.dart', '.dart'));
+  await for (final generatedFile in Directory.current
+      .list(recursive: true)
+      .where((f) => f is File && f.path.endsWith('.g.dart'))) {
+    final sourceFile =
+        File(generatedFile.path.replaceFirst('.g.dart', '.dart'));
     testCompile('$sourceFile', sourceFile, generatedFile);
   }
 }

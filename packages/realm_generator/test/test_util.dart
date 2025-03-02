@@ -4,10 +4,14 @@ import 'package:build_test/build_test.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
+import 'package:pub_semver/pub_semver.dart';
 import 'package:realm_generator/realm_generator.dart';
 import 'package:test/test.dart';
 
-final _formatter = DartFormatter(lineEnding: '\n');
+final _formatter = DartFormatter(
+  lineEnding: '\n',
+  languageVersion: Version.parse('3.7.0'),
+);
 
 /// Used to test both correct an erroneous compilation.
 /// [source] can be a [File] or a [String].
